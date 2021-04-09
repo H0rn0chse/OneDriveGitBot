@@ -21,6 +21,7 @@
   "dependencies": {
     "discord.js": "^12.5.3",
     "dotenv": "^8.2.0",
+    "express": "^4.17.1",
     "onedrive-api": "^1.0.1",
     "simple-git": "^2.37.0",
     "simple-oauth2": "^4.2.0"
