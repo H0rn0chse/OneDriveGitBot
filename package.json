@@ -1,0 +1,27 @@
+{
+  "name": "onedrivegitbot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/H0rn0chse/OneDriveGitBot.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/H0rn0chse/OneDriveGitBot/issues"
+  },
+  "homepage": "https://github.com/H0rn0chse/OneDriveGitBot#readme",
+  "dependencies": {
+    "discord.js": "^12.5.3",
+    "onedrive-api": "^1.0.1",
+    "simple-git": "^2.37.0",
+    "simple-oauth2": "^4.2.0"
+  }
+}
