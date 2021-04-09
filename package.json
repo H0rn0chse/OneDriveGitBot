@@ -20,6 +20,7 @@
   "homepage": "https://github.com/H0rn0chse/OneDriveGitBot#readme",
   "dependencies": {
     "discord.js": "^12.5.3",
+    "dotenv": "^8.2.0",
     "onedrive-api": "^1.0.1",
     "simple-git": "^2.37.0",
     "simple-oauth2": "^4.2.0"
