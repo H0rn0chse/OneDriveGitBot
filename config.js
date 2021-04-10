@@ -19,6 +19,7 @@ export const config  = {
             "json",
             "tmx",
             "tsx",
+            "docx",
         ],
     },
     outdir: path.join(dirname, "/out"),
