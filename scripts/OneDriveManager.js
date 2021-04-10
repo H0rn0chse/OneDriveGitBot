@@ -210,7 +210,7 @@ class _OneDriveManager {
 
     async getAllFiles () {
         const files = await this.getFolderInfo(config.onedrive.folderId);
-        files.now = Math.floow(Date.now() / 1000);
+        files.now = Math.floor(Date.now() / 1000);
         return files;
     }
 

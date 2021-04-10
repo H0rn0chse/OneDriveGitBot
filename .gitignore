@@ -105,3 +105,5 @@ dist
 
 # Used for local file movements
 out/
+
+_private
