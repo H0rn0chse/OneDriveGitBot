@@ -2,12 +2,9 @@ import * as fsPromise from "fs/promises";
 import * as fs from "fs";
 import * as path from "path";
 import * as oneDriveAPI from "onedrive-api";
-import { AuthorizationCode } from "simple-oauth2";
 import { config, dirname } from "../config.js";
-import { ClientManager } from "./ClientManager.js";
 import { Deferred } from "./Deferred.js";
 
-const tokenPath = path.join(config.outdir, "microsoftToken.txt");
 const folderInfoPath = path.join(dirname, "out/folderInfo.json");
 
 class _OneDriveManager {
@@ -15,100 +12,43 @@ class _OneDriveManager {
         this.deferred = new Deferred();
     }
 
-    login (clientId, appToken) {
+    login (oauth) {
         this.extensionFilter = null;
         this.oldFolderInfo = null;
 
-        this.serveAuth(clientId, appToken);
+        this.oauth = oauth;
 
         try {
-            this.getToken().then((token) => {
-                this.token = token
-            }).then(() => {
-                return this.getOldFolderInfo();
-            }).then((result) => {
-                this.oldFolderInfo = result;
-            }).then(() => {
-                return this.getAllFiles();
-            }).then(async (result) => {
-                const res = JSON.stringify(result, null, 2);
-                await fsPromise.writeFile(folderInfoPath, res);
+            this.getOldFolderInfo()
+                .then((result) => {
+                    this.oldFolderInfo = result;
+                })
+                .then(() => {
+                    return this.getAllFiles();
+                })
+                .then(async (result) => {
+                    const res = JSON.stringify(result, null, 2);
+                    await fsPromise.writeFile(folderInfoPath, res);
 
-                this.checkTimestamps(this.oldFolderInfo, result);
-                return result;
-            }).then(function (result) {
-                console.log("file fetch done");
-                return result;
-            }).then((result) => {
-                return this.downloadAllFiles(result);
-            }).then(function () {
-                console.log("download done");
-            });
+                    this.checkTimestamps(this.oldFolderInfo, result);
+                    return result;
+                })
+                .then(function (result) {
+                    console.log("file fetch done");
+                    return result;
+                })
+                .then((result) => {
+                    return this.downloadAllFiles(result);
+                })
+                .then(function () {
+                    console.log("download done");
+                });
         } catch (err) {
             console.error("some major error happend")
             console.error(err);
         }
 
         return this.deferred.promise;
-    }
-
-    serveAuth (clientId, appToken) {
-        // Authorization uri definition
-        const client = new AuthorizationCode({
-            client: {
-                id: clientId,
-                secret: appToken
-            },
-            auth: {
-                tokenHost: "https://login.live.com",
-                tokenPath: "/oauth20_token.srf",
-                authorizePath: "/oauth20_authorize.srf",
-            },
-            options: {
-                authorizationMethod: "body",
-            },
-        });
-
-        const authorizationUri = client.authorizeURL({
-            redirect_uri: ClientManager.callbackUrl,
-            scope: "Files.Read.All",
-        });
-
-        // Initial page redirecting to Github
-        ClientManager.get("/auth", (req, res) => {
-            // console.log(authorizationUri);
-            res.redirect(authorizationUri);
-        });
-
-        // Callback service parsing the authorization token and asking for the access token
-        ClientManager.get("/callback", async (req, res) => {
-            const { code } = req.query;
-
-            try {
-                const accessToken = await client.getToken({
-                    code,
-                    redirect_uri: ClientManager.callbackUrl,
-                });
-
-                console.log("The resulting token: ", accessToken.token);
-
-                res.status(200).send("Authentication successful"); // json(accessToken.token);
-                this.token = accessToken.token.access_token;
-
-                fsPromise.writeFile(path.join(config.outdir, "microsoftToken.txt"), this.token);
-
-                this.deferred.resolve();
-            } catch (error) {
-                console.error("Access Token Error", error.message);
-                res.status(500).json("Authentication failed");
-
-                this.deferred.reject();
-            }
-        });
-
-        ClientManager.get("/", (req, res) => {
-            res.send("Hello<br><a href='/auth'>Log in with Microsoft</a>");
-        });
     }
 
     getExtensionFilter () {
@@ -150,10 +90,6 @@ class _OneDriveManager {
         })
     }
 
-    async getToken () {
-        return fsPromise.readFile(tokenPath, "utf-8");
-    }
-
     async getOldFolderInfo () {
         const result = await fsPromise.readFile(folderInfoPath, "utf-8");
         return JSON.parse(result);
@@ -189,9 +125,11 @@ class _OneDriveManager {
             const filePath = path.join(dir, fileName);
             console.log(`started: ${filePath}`);
 
+            const token = await this.oauth.getAccessToken();
+
             const writeStream = fs.createWriteStream(filePath)
             const fileStream = oneDriveAPI.items.download({
-                accessToken: this.token,
+                accessToken: token,
                 itemId: itemId,
                 drive: config.onedrive.drive,
                 driveId: config.onedrive.driveId,
@@ -220,8 +158,10 @@ class _OneDriveManager {
             files: [],
         };
 
+        const token = await this.oauth.getAccessToken();
+
         const response = await oneDriveAPI.items.listChildren({
-            accessToken: this.token,
+            accessToken: token,
             itemId: folderId,
             drive: config.onedrive.drive,
             driveId: config.onedrive.driveId,
