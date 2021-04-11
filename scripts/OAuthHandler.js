@@ -33,7 +33,7 @@ export class OAuthHandler {
     serveAuth () {
         const authorizationUri = this.client.authorizeURL({
             redirect_uri: ClientManager.callbackUrl,
-            scope: "Files.Read.All,wl.offline_access",
+            scope: "Files.Read.All,offline_access",
         });
 
         // Initial page redirecting to Github
@@ -104,18 +104,24 @@ export class OAuthHandler {
      */
     async refreshToken () {
         if (this.token.expired()) {
+            if (this.tokenRefreshDeferred?.isPending) {
+                return this.tokenRefreshDeferred.promise;
+            } else {
+                this.tokenRefreshDeferred = new Deferred();
+            }
             try {
                 const newToken = await this.token.refresh({
-                    scope: "Files.Read.All,wl.offline_access",
+                    scope: "Files.Read.All,offline_access",
                 });
                 this.token = newToken;
                 console.log("Token refresh successful");
                 this.saveTokenToFile();
-                return true;
+                this.tokenRefreshDeferred.resolve(true);
+
             } catch (err) {
                 console.log("Token refresh failed");
                 console.error(err);
-                return false;
+                this.tokenRefreshDeferred.resolve(false);
             }
         }
         return true;

@@ -8,6 +8,7 @@ const filename = fileURLToPath(import.meta.url);
 export const dirname = path.dirname(filename);
 
 export const config  = {
+    outdir: path.join(dirname, "/out"),
     onedrive: {
         folderId: process.env.FOLDER_ID,
         drive: "personal",
@@ -20,7 +21,10 @@ export const config  = {
             "tmx",
             "tsx",
             "docx",
+            "txt",
         ],
     },
-    outdir: path.join(dirname, "/out"),
+    git: {
+        targetFolder: "/assets"
+    }
 };
