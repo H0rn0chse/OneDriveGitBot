@@ -9,46 +9,11 @@ const folderInfoPath = path.join(dirname, "out/folderInfo.json");
 
 class _OneDriveManager {
     constructor () {
-        this.deferred = new Deferred();
+        this.extensionFilter = null;
     }
 
-    login (oauth) {
-        this.extensionFilter = null;
-        this.oldFolderInfo = null;
-
-        this.oauth = oauth;
-
-        try {
-            this.getOldFolderInfo()
-                .then((result) => {
-                    this.oldFolderInfo = result;
-                })
-                .then(() => {
-                    return this.getAllFiles();
-                })
-                .then(async (result) => {
-                    const res = JSON.stringify(result, null, 2);
-                    await fsPromise.writeFile(folderInfoPath, res);
-
-                    this.checkTimestamps(this.oldFolderInfo, result);
-                    return result;
-                })
-                .then(function (result) {
-                    console.log("file fetch done");
-                    return result;
-                })
-                .then((result) => {
-                    return this.downloadAllFiles(result);
-                })
-                .then(function () {
-                    console.log("download done");
-                });
-        } catch (err) {
-            console.error("some major error happend")
-            console.error(err);
-        }
-
-        return this.deferred.promise;
+    async login (oauth) {
+        this.oauth = oauth;;
     }
 
     getExtensionFilter () {
@@ -90,9 +55,14 @@ class _OneDriveManager {
         })
     }
 
-    async getOldFolderInfo () {
+    async readFolderInfo () {
         const result = await fsPromise.readFile(folderInfoPath, "utf-8");
         return JSON.parse(result);
+    }
+
+    async writeFolderInfo (folderInfo) {
+        const json = JSON.stringify(folderInfo, null, 2);
+        await fsPromise.writeFile(folderInfoPath, json);
     }
 
     async downloadAllFiles (folderInfo) {

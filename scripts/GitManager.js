@@ -3,43 +3,65 @@ import * as path from "path";
 import simpleGit from "simple-git";
 import { config } from "../config.js";
 
-const gitPath = path.join(config.outdir, "repo");
-if (!fs.existsSync(gitPath)) {
-    fs.mkdirSync(gitPath);
+const folderPath = path.join(config.outdir, "repo");
+if (!fs.existsSync(folderPath)) {
+    fs.mkdirSync(folderPath);
 }
 
-const git = simpleGit(gitPath);
+const git = simpleGit(folderPath);
 
 class _GitManager {
     constructor () {
-        //tbd
+        this.repoPath = null;
     }
 
     async init (repoPath) {
-        let isGitRepo = fs.existsSync(path.join(gitPath, ".git"));
+        this.repoPath = repoPath;
+        await this.reset();
+    }
+
+    /**
+     * Resets the repository to the current most recent state
+     */
+    async reset () {
+        let isGitRepo = fs.existsSync(path.join(folderPath, ".git"));
 
         if (isGitRepo) {
             const config = await git.listConfig();
             const currentRepoPath = config.all["remote.origin.url"];
 
-            if (currentRepoPath !== repoPath) {
-                fs.rmdirSync(gitPath, { recursive: true });
-                fs.mkdirSync(gitPath);
+            if (currentRepoPath !== this.repoPath) {
+                fs.rmdirSync(folderPath, { recursive: true });
+                fs.mkdirSync(folderPath);
                 isGitRepo = false;
             }
         }
 
         if (!isGitRepo) {
-            await git.clone(repoPath, gitPath);
+            await git.clone(this.repoPath, folderPath);
         } else {
             await git.pull();
-            const filePath = "/Readme.md";
-            const lastModified = await this.getFileLastModified(filePath);
-            console.log(lastModified);
         }
     }
 
+    async commitAll () {
+        const commitMessage = "[BOT] Added ressources";
+
+        const status = await git.status();
+
+        if (status.files.length === 0) {
+            return;
+        }
+
+        await git.raw(["add", "-A"]);
+        await git.commit(commitMessage)
+        await git.push();
+    }
+
     async getFileLastModified (filePath) {
+        if (!fs.existsSync(path.join(folderPath, config.git.targetFolder, filePath))) {
+            return 0;
+        }
         const log = await git.raw(["log", "-1", `--pretty="format:%ci" ${filePath}`]);
         const isoTime = log.split("\"")[1];
         const ms = new Date(isoTime).getTime();
