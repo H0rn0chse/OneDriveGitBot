@@ -3,6 +3,7 @@ import * as fs from "fs";
 import { Debug } from "./Debug.js";
 import { sync } from "./commands/sync.js";
 import { addDebug, removeDebug, sendDebug } from "./commands/debugChannel.js";
+import { setToken, checkToken } from "./commands/token.js";
 import { DiscordManager } from "./DiscordManager.js";
 import { config } from "../config.js";
 
@@ -19,12 +20,17 @@ class _CommandManager {
         };
 
         this.dmCommands = {
-
+            setToken,
+            checkToken
         };
 
         this.invokeCommands = {
             sendDebug
         };
+
+        this.doNotDebug = [
+            "setToken"
+        ];
 
         this.config = null;
 
@@ -59,7 +65,11 @@ class _CommandManager {
     }
 
     async execCommand (discordMessage, command, args, isDM) {
-        Debug.log(`command: ${command}, args: ${JSON.stringify(args)}`, COMPONENT);
+        if (!this.doNotDebug.includes(command)) {
+            Debug.log(`command: ${command}, args: ${JSON.stringify(args)}`, COMPONENT);
+        } else {
+            Debug.log(`command: ${command}, args: <private>`, COMPONENT);
+        }
 
         if (this.currentCommand) {
             DiscordManager.reply(discordMessage, "There is already a command running! Please wait until it's done and submit your command again");

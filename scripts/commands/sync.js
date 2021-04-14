@@ -8,18 +8,19 @@ import { iterateFiles } from "./common.js";
 
 export async function sync () {
     const commandName =  "Sync Files";
-    Debug.log(`starting ${commandName}`, COMPONENT);
+
+    Debug.log(`starting`, commandName);
 
     const oldFolderInfo = await OneDriveManager.readFolderInfo();
-    Debug.log(`${commandName} | folderInfo (old) fetch done`, COMPONENT);
+    Debug.log(`folderInfo (old) fetch done`, commandName);
 
     const newFolderInfo = await OneDriveManager.getAllFiles();
     await OneDriveManager.writeFolderInfo(newFolderInfo);
     OneDriveManager.checkTimestamps(oldFolderInfo, newFolderInfo);
-    Debug.log(`${commandName} | folderInfo (new) fetch done`, COMPONENT);
+    Debug.log(`folderInfo (new) fetch done`, commandName);
 
     await OneDriveManager.downloadAllFiles(newFolderInfo);
-    Debug.log(`${commandName} | download done`, COMPONENT);
+    Debug.log(`download done`, commandName);
 
     // copy
     const gitFolder = path.join(config.outdir, "repo", config.git.targetFolder);
@@ -40,10 +41,10 @@ export async function sync () {
             await fs.promises.copyFile(sourcePath, targetPath);
         }
     });
-    Debug.log(`${commandName} | copy done`, COMPONENT);
+    Debug.log(`copy done`, commandName);
 
     await GitManager.commitAll();
-    Debug.log(`${commandName} | commit done`, COMPONENT);
+    Debug.log(`commit done`, commandName);
 
-    Debug.log(`finished ${commandName}`, COMPONENT);
+    Debug.log(`finished`, commandName);
 }

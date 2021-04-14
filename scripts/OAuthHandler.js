@@ -81,7 +81,16 @@ export class OAuthHandler {
                 this.tokenDeferred.resolve();
             }
         }
+    }
 
+    async loadTokenFromObject (object) {
+        this.tokenDeferred = new Deferred();
+        this.token = this.client.createToken(object);
+
+        if (await this.refreshToken(true)) {
+            this.tokenDeferred.resolve();
+            this.saveTokenToFile();
+        }
     }
 
     saveTokenToFile () {
@@ -106,8 +115,8 @@ export class OAuthHandler {
      * Refreshes the token in case it expired
      * @returns {boolean} whether there is a valid token
      */
-    async refreshToken () {
-        if (this.token.expired()) {
+    async refreshToken (force) {
+        if (this.token.expired() || force) {
             if (this.tokenRefreshDeferred?.isPending) {
                 return this.tokenRefreshDeferred.promise;
             } else {

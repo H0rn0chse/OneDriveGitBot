@@ -32,7 +32,9 @@ class _DiscordManager {
 
             CommandManager.execCommand(message, command, args, isDM);
 
-			return message.delete({ timeout: 1000 });
+            if (!isDM) {
+                return message.delete({ timeout: 1000 });
+            }
 		}
     }
 

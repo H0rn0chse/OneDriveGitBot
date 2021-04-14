@@ -18,7 +18,7 @@ class _OneDriveManager {
     }
 
     async login (oauth) {
-        this.oauth = oauth;;
+        this.oauth = oauth;
     }
 
     getExtensionFilter () {

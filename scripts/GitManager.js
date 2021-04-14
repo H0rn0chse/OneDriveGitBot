@@ -45,7 +45,7 @@ class _GitManager {
     }
 
     async commitAll () {
-        const commitMessage = "[BOT] Added resources";
+        const commitMessage = "[BOT] Updated resources";
 
         const status = await git.status();
 
