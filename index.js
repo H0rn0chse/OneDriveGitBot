@@ -4,7 +4,6 @@ import * as dotenv from "dotenv";
 import { ClientManager } from "./scripts/ClientManager.js";
 import { OAuthHandler } from "./scripts/OAuthHandler.js";
 import { GitManager } from "./scripts/GitManager.js";
-import { CommandManager } from "./scripts/CommandManager.js";
 import { Debug } from "./scripts/Debug.js";
 
 dotenv.config();
