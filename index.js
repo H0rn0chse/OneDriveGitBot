@@ -24,9 +24,5 @@ ClientManager.start().then(() => {
         }),
     ]).then(() => {
         Debug.log("All Managers were started successfully!");
-
-        // return CommandManager.dummyCommand();
-    }).then(() => {
-        // console.log("dummyCommand done");
     })
 });

@@ -20,6 +20,7 @@ class _Debug {
         const message = this._buildMessage(msg, component, severity);
         console.error(message);
         CommandManager.invokeCommand("sendDebug", message);
+        CommandManager.invokeCommand("sendAlert", message);
     }
 
     _buildMessage (msg, component, severity) {
@@ -28,7 +29,7 @@ class _Debug {
         }
 
         const time = new Date().toISOString();
-        const message = `${severity}(${time}): ${component}\n${msg}`;
+        const message = `${severity} ${time}: ${component}\n${msg}`;
         return message;
     }
 }
