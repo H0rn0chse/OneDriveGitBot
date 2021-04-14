@@ -5,6 +5,7 @@ import { ClientManager } from "./scripts/ClientManager.js";
 import { OAuthHandler } from "./scripts/OAuthHandler.js";
 import { GitManager } from "./scripts/GitManager.js";
 import { CommandManager } from "./scripts/CommandManager.js";
+import { Debug } from "./scripts/Debug.js";
 
 dotenv.config();
 
@@ -22,8 +23,10 @@ ClientManager.start().then(() => {
             console.log("Git init successful!");
         }),
     ]).then(() => {
-        return CommandManager.dummyCommand();
+        Debug.log("All Managers were started successfully!");
+
+        // return CommandManager.dummyCommand();
     }).then(() => {
-        console.log("dummyCommand done");
+        // console.log("dummyCommand done");
     })
 });

@@ -1,11 +1,16 @@
-import * as fsPromise from "fs/promises";
 import * as fs from "fs";
 import * as path from "path";
 import * as oneDriveAPI from "onedrive-api";
-import { config, dirname } from "../config.js";
+import { config } from "../config.js";
 import { Deferred } from "./Deferred.js";
+import { Debug } from "./Debug.js";
 
-const folderInfoPath = path.join(dirname, "out/folderInfo.json");
+const folderInfoPath = path.join(config.outdir, "folderInfo.json");
+if (!fs.existsSync(folderInfoPath)) {
+    fs.mkdirSync(folderInfoPath);
+}
+
+const COMPONENT = "OneDriveManager";
 
 class _OneDriveManager {
     constructor () {
@@ -56,13 +61,19 @@ class _OneDriveManager {
     }
 
     async readFolderInfo () {
-        const result = await fsPromise.readFile(folderInfoPath, "utf-8");
+        if (!fs.existsSync(folderInfoPath)) {
+            return {
+                folders: [],
+                files: []
+            };
+        }
+        const result = await fs.promises.readFile(folderInfoPath, "utf-8");
         return JSON.parse(result);
     }
 
     async writeFolderInfo (folderInfo) {
         const json = JSON.stringify(folderInfo, null, 2);
-        await fsPromise.writeFile(folderInfoPath, json);
+        await fs.promises.writeFile(folderInfoPath, json);
     }
 
     async downloadAllFiles (folderInfo) {
@@ -84,7 +95,7 @@ class _OneDriveManager {
             const folderPath = path.join(currentDir, folder.name);
 
             if (!fs.existsSync(folderPath)){
-                fs.mkdirSync(folderPath);
+                await fs.promises.mkdir(folderPath, { recursive: true });
             }
             await this.downloadFolder(folder, folderPath);
         }
@@ -93,7 +104,7 @@ class _OneDriveManager {
     async downloadFile (itemId, fileName, dir) {
         return new Promise(async (resolve, reject) => {
             const filePath = path.join(dir, fileName);
-            console.log(`started: ${filePath}`);
+            Debug.log(`started: ${filePath}`, COMPONENT);
 
             const token = await this.oauth.getAccessToken();
 
@@ -110,15 +121,14 @@ class _OneDriveManager {
             fileStream.on("error", reject);
         })
         .catch(() => {
-            console.log(`Download failed! id: ${itemId}, name:${fileName}, dir: ${dir}`);
-            //console.error(err);
+            Debug.error(`Download failed!\nid: ${itemId},\nname:${fileName},\ndir: ${dir}`, COMPONENT);
+            console.error(err);
             return this.downloadFile(itemId, fileName, dir);
         });
     }
 
     async getAllFiles () {
         const files = await this.getFolderInfo(config.onedrive.folderId);
-        files.now = Math.floor(Date.now() / 1000);
         return files;
     }
 

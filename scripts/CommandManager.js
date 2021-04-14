@@ -1,68 +1,84 @@
 import * as path from "path";
 import * as fs from "fs";
-import * as fsPromises from "fs/promises";
+import { Debug } from "./Debug.js";
+import { sync } from "./commands/sync.js";
+import { addDebug, removeDebug, sendDebug } from "./commands/debugChannel.js";
+import { DiscordManager } from "./DiscordManager.js";
 import { config } from "../config.js";
-import { GitManager } from "./GitManager.js";
-import { OneDriveManager } from "./OneDriveManager.js";
+
+const configFile = path.join(config.outdir, "command.json");
+
+const COMPONENT = "CommandManager";
 
 class _CommandManager {
     constructor () {
-        // tbd
+        this.channelCommands = {
+            sync,
+            addDebug,
+            removeDebug,
+        };
+
+        this.dmCommands = {
+
+        };
+
+        this.invokeCommands = {
+            sendDebug
+        };
+
+        this.config = null;
+
+        this.currentCommand = null;
+
+        this.loadConfig();
     }
 
-    execCommand (discordMessage, command, args) {
-        console.log(`command: ${command}, args: ${JSON.stringify(args)}`)
-    }
-
-    async dummyCommand () {
-        console.log("starting dummy command");
-
-        const oldFolderInfo = await OneDriveManager.readFolderInfo();
-        console.log("folderInfo (old) fetch done");
-
-        const newFolderInfo = await OneDriveManager.getAllFiles();
-        await OneDriveManager.writeFolderInfo(newFolderInfo);
-        OneDriveManager.checkTimestamps(oldFolderInfo, newFolderInfo);
-        console.log("folderInfo (new) fetch done");
-
-        await OneDriveManager.downloadAllFiles(newFolderInfo);
-        console.log("download done");
-
-        // copy
-        const gitFolder = path.join(config.outdir, "repo", config.git.targetFolder);
-        const oneDriveFolder = path.join(config.outdir, "folder");
-
-        await this._iterateFiles(newFolderInfo, "", async (fileInfo, currentDir) => {
-            const gitLastModified = await GitManager.getFileLastModified(path.join(currentDir, fileInfo.name));
-
-            if (fileInfo.lastModified > gitLastModified) {
-                const sourcePath = path.join(oneDriveFolder, currentDir, fileInfo.name);
-                const targetFolder = path.join(gitFolder, currentDir);
-                const targetPath = path.join(targetFolder, fileInfo.name);
-
-                if (!fs.existsSync(targetFolder)) {
-                    await fsPromises.mkdir(targetFolder, { recursive: true });
-                }
-
-                await fsPromises.copyFile(sourcePath, targetPath);
-            }
-        });
-        console.log("copy done");
-
-        await GitManager.commitAll();
-        console.log("commit done");
-    }
-
-    async _iterateFiles (folderInfo, currentDir, fnHandler) {
-        for (let i=0; i < folderInfo.files.length; i++) {
-            const fileInfo = folderInfo.files[i];
-            await fnHandler(fileInfo, currentDir);
+    async loadConfig () {
+        if (!fs.existsSync(configFile)) {
+            this.config = {};
+            return;
         }
 
-        for (let i=0; i < folderInfo.folders.length; i++) {
-            const folder = folderInfo.folders[i];
-            await this._iterateFiles(folder, path.join(currentDir, folder.name), fnHandler);
+        const json = await fs.promises.readFile(configFile);
+        this.config = JSON.parse(json);
+    }
+
+    async saveConfig () {
+        const json = JSON.stringify(this.config, null, 2);
+        await fs.promises.writeFile(configFile, json);
+    }
+
+    async invokeCommand (command, ...args) {
+        const handler = this.invokeCommands[command];
+
+        if (!handler) {
+            return;
         }
+
+        await handler.apply(this, args);
+    }
+
+    async execCommand (discordMessage, command, args, isDM) {
+        Debug.log(`command: ${command}, args: ${JSON.stringify(args)}`, COMPONENT);
+
+        if (this.currentCommand) {
+            DiscordManager.reply(discordMessage, "There is already a command running! Please wait until it's done and submit your command again");
+            return;
+        }
+
+
+        const handler = isDM ? this.dmCommands[command] : this.channelCommands[command];
+
+        if (!handler) {
+            DiscordManager.reply(discordMessage, `The command "${command}" does not exist or is not enabled for this scope`);
+            return;
+        }
+
+        this.currentCommand = command;
+
+        await handler.call(this, discordMessage, ...args);
+
+        this.currentCommand = null;
     }
 }
 

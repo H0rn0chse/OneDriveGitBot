@@ -5,8 +5,11 @@ import { AuthorizationCode } from "simple-oauth2";
 import { config } from "../config.js";
 import { ClientManager } from "./ClientManager.js";
 import { Deferred } from "./Deferred.js";
+import { Debug } from "./Debug.js";
 
 const tokenPath = path.join(config.outdir, "microsoftToken.json");
+
+const COMPONENT = "OAuthHandler";
 
 export class OAuthHandler {
     constructor (clientId, appToken) {
@@ -52,13 +55,14 @@ export class OAuthHandler {
                     redirect_uri: ClientManager.callbackUrl,
                 });
 
-                console.log("Recieved token");
+                Debug.log("Recieved token", COMPONENT);
                 this.saveTokenToFile();
                 this.tokenDeferred.resolve();
 
                 res.status(200).send("Authentication successful"); // json(accessToken.token);
             } catch (error) {
-                console.error("Access Token Error", error.message);
+                Debug.error("Access Token Error", COMPONENT);
+                Debug.error(error.message, COMPONENT);
                 res.status(500).json("Authentication failed");
             }
         });
@@ -110,16 +114,20 @@ export class OAuthHandler {
                 this.tokenRefreshDeferred = new Deferred();
             }
             try {
+                Debug.warn("Token is expired", COMPONENT);
+
                 const newToken = await this.token.refresh({
                     scope: "Files.Read.All,offline_access",
                 });
                 this.token = newToken;
-                console.log("Token refresh successful");
+                Debug.log("Token refresh successful", COMPONENT);
+
                 this.saveTokenToFile();
                 this.tokenRefreshDeferred.resolve(true);
 
             } catch (err) {
-                console.log("Token refresh failed");
+                Debug.error("Token refresh failed", COMPONENT);
+
                 console.error(err);
                 this.tokenRefreshDeferred.resolve(false);
             }

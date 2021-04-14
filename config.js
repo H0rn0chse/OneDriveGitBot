@@ -1,4 +1,5 @@
 import * as path from "path";
+import * as fs from "fs";
 import { fileURLToPath } from "url";
 import * as dotenv from "dotenv";
 
@@ -28,3 +29,7 @@ export const config  = {
         targetFolder: "/assets"
     }
 };
+
+if (!fs.existsSync(config.outdir)) {
+    fs.mkdirSync(config.outdir);
+}

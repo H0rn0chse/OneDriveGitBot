@@ -31,8 +31,8 @@ class _GitManager {
             const currentRepoPath = config.all["remote.origin.url"];
 
             if (currentRepoPath !== this.repoPath) {
-                fs.rmdirSync(folderPath, { recursive: true });
-                fs.mkdirSync(folderPath);
+                await fs.promises.rmdir(folderPath, { recursive: true });
+                await fs.promises.mkdir(folderPath);
                 isGitRepo = false;
             }
         }
