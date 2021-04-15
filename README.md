@@ -3,7 +3,7 @@
  * [Commands](#commands)
  * [Bot Setup](#bot-setup)
 
-This discord bot syncs a OneDrive folder with a git repository. This is useful for projects with users, which don't have a technical background and have issues with using git. The bot is limited to a one directional sync. This is for example in game dev projects useful, where each artists works on its own pieces and no sync from git to OneDrive is required.
+This discord bot syncs a OneDrive folder with a git repository. This is useful for projects with users, which don't have a technical background and have issues with using git. The bot is limited to a one directional sync. This limits the use cases: e.g game dev projects, where each artists works on its own artworks and no sync from git to OneDrive is required.
 
 ## Commands
 The commands need to start with !gj. Due to concurrency issues only one command can run at once.
@@ -31,5 +31,13 @@ Fetches the current stat of the OneDrive folder and pushes new files into the gi
 
 ## Bot Setup
 
- * __How to register and your bot to your server?__<br>
-The [discord.js guide](https://www.discordjs.guide) contains a very good documentation on [how to create a bot](https://discordjs.guide/preparations/setting-up-a-bot-application.html) and [how to add one to a server](https://discordjs.guide/preparations/adding-your-bot-to-servers.html). This project uses [dotenv](https://github.com/motdotla/dotenv) for managing secrets locally.
+The bot is configured via the [config](/config.js) and the local .env. You can find here an example of the required names: [.env.example](/.env.example).
+
+### Discord
+The [discord.js guide](https://www.discordjs.guide) contains a very good documentation on [how to create a bot](https://discordjs.guide/preparations/setting-up-a-bot-application.html) and [how to add one to a server](https://discordjs.guide/preparations/adding-your-bot-to-servers.html). It also explains [where to get your token](https://discordjs.guide/preparations/setting-up-a-bot-application.html#your-token) and how to handle it properly.
+
+### Microsoft
+Follow the [documentation](https://docs.microsoft.com/en-us/onedrive/developer/rest-api/getting-started/msa-oauth?view=odsp-graph-online) and create your application. You can create a secret/apptoken in the "Certificates & secrets" tab. You can easily fetch your OneDrive folderId from the url parameters when viewing it in the browser. The driveId is typically the part before the `!` in the folderId. You can check your íds via the [graph explorer](https://developer.microsoft.com/en-us/graph/graph-explorer) and GET request `https://graph.microsoft.com/v1.0/drives/<DRIVE_ID>/items/<FOLDER_ID>`
+
+### Git
+Please ensure you use [ssh on your system](https://docs.github.com/en/github/authenticating-to-github/adding-a-new-ssh-key-to-your-github-account). You might need to change some parts in case you want to use http/ OAuth instead.
