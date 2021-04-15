@@ -1,20 +1,24 @@
 import { DiscordManager } from "../DiscordManager.js";
 
 export async function addAlert (discordMessage) {
+    const channelId = discordMessage.channel.id;
     if (!Array.isArray(this.config.alertChannels)) {
         this.config.alertChannels = [];
     }
 
-    this.config.alertChannels.push(discordMessage.channel.id);
+    if (!this.config.alertChannels.includes(channelId)) {
+        this.config.alertChannels.push(channelId);
+    }
     await this.saveConfig();
 }
 
 export async function removeAlert (discordMessage) {
+    const channelId = discordMessage.channel.id;
     if (!Array.isArray(this.config.alertChannels)) {
         return;
     }
     const index = this.config.alertChannels.findIndex((channel) => {
-        return channel === discordMessage.channel.id;
+        return channel === channelId;
     });
     if (index > -1) {
         this.config.alertChannels.splice(index, 1);

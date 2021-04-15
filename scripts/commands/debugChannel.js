@@ -1,20 +1,24 @@
 import { DiscordManager } from "../DiscordManager.js";
 
 export async function addDebug (discordMessage) {
+    const channelId = discordMessage.channel.id;
     if (!Array.isArray(this.config.debugChannels)) {
         this.config.debugChannels = [];
     }
 
-    this.config.debugChannels.push(discordMessage.channel.id);
+    if (!this.config.debugChannels.includes(channelId)) {
+        this.config.debugChannels.push(discordMessage.channel.id);
+    }
     await this.saveConfig();
 }
 
 export async function removeDebug (discordMessage) {
+    const channelId = discordMessage.channel.id;
     if (!Array.isArray(this.config.debugChannels)) {
         return;
     }
     const index = this.config.debugChannels.findIndex((channel) => {
-        return channel === discordMessage.channel.id;
+        return channel === channelId;
     });
     if (index > -1) {
         this.config.debugChannels.splice(index, 1);
