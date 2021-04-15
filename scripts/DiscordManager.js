@@ -1,4 +1,4 @@
-import { ChannelManager, Client } from "discord.js";
+import { Activity, ChannelManager, Client, ClientPresence, RichPresenceAssets } from "discord.js";
 import { CommandManager } from "./CommandManager.js";
 import { Deferred } from "./Deferred.js";
 
@@ -18,9 +18,18 @@ class _DiscordManager {
         });
     }
 
-    login (token) {
-        this.client.login(token);
+    async login (token) {
+        await this.client.login(token);
+        await this.setStatus();
+
         return this.readyDeferred.promise;
+    }
+
+    async setStatus (name = "Idling", type = "COMPETING") {
+        await this.client.user.setActivity({
+            name: name,
+            type: type,
+        });
     }
 
     onMessage (message) {
@@ -33,14 +42,16 @@ class _DiscordManager {
             CommandManager.execCommand(message, command, args, isDM);
 
             if (!isDM) {
-                return message.delete({ timeout: 1000 });
+                //return message.delete({ timeout: 1000 });
             }
 		}
     }
 
-    async reply (message, replyMessage) {
+    async reply (message, replyMessage, timeout = true) {
         const newMessage = await message.reply(replyMessage);
-        await newMessage.delete({ timeout: 5000 });
+        if (timeout) {
+            await newMessage.delete({ timeout: 5000 });
+        }
     }
 
     async send (channel, message, timeout) {
@@ -70,6 +81,10 @@ class _DiscordManager {
             await message.delete();
         }
         this.sentMessages = [];
+    }
+
+    logoff () {
+        this.client.destroy();
     }
 }
 

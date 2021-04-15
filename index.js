@@ -9,14 +9,13 @@ import { Debug } from "./scripts/Debug.js";
 dotenv.config();
 
 ClientManager.start().then(() => {
-    const OAuth = new OAuthHandler(process.env.MICROSOFT_CLIENTID, process.env.MICROSOFT_APPTOKEN);
-
-
     DiscordManager.login(process.env.DISCORD_TOKEN)
         .then(() => {
             console.log("Discord login successful!");
         })
         .then(() => {
+            const OAuth = new OAuthHandler(process.env.MICROSOFT_CLIENTID, process.env.MICROSOFT_APPTOKEN);
+
             return Promise.all([
                 OneDriveManager.login(OAuth).then(() => {
                     console.log("OneDrive login successful!");
@@ -28,5 +27,10 @@ ClientManager.start().then(() => {
         })
         .then(() => {
             Debug.log("All Managers were started successfully!");
+
+            process.on("SIGINT", () => {
+                DiscordManager.logoff();
+                process.exit();
+            });
         });
 });

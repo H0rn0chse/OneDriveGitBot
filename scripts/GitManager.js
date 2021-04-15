@@ -50,12 +50,13 @@ class _GitManager {
         const status = await git.status();
 
         if (status.files.length === 0) {
-            return;
+            return false;
         }
 
         await git.raw(["add", "-A"]);
         await git.commit(commitMessage)
         await git.push();
+        return true;
     }
 
     async getFileLastModified (filePath) {
