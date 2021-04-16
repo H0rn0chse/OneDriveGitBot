@@ -80,6 +80,8 @@ export class OAuthHandler {
             if (await this.refreshToken()) {
                 this.tokenDeferred.resolve();
             }
+        } else {
+            Debug.error("No intial Token provided");
         }
     }
 
