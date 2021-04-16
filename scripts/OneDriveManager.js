@@ -78,7 +78,7 @@ class _OneDriveManager {
     }
 
     async downloadAllFiles (folderInfo) {
-        return this.downloadFolder(folderInfo, path.join(config.outdir, "folder"));
+        return this.downloadFolder(folderInfo, folderPath);
     }
 
     async downloadFolder (folderInfo, currentDir) {

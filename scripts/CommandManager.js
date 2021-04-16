@@ -90,7 +90,11 @@ class _CommandManager {
 
         this.currentCommand = command;
 
-        await handler.call(this, discordMessage, ...args);
+        try {
+            await handler.call(this, discordMessage, ...args);
+        } catch (err) {
+            Debug.error(err.message);
+        }
 
         this.currentCommand = null;
     }
