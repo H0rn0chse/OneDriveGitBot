@@ -6,8 +6,9 @@ import { Deferred } from "./Deferred.js";
 import { Debug } from "./Debug.js";
 
 const folderInfoPath = path.join(config.outdir, "folderInfo.json");
-if (!fs.existsSync(folderInfoPath)) {
-    fs.mkdirSync(folderInfoPath);
+const folderPath = path.join(config.outdir, "folder");
+if (!fs.existsSync(folderPath)) {
+    fs.mkdirSync(folderPath);
 }
 
 const COMPONENT = "OneDriveManager";
