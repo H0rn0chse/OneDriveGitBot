@@ -21,12 +21,11 @@ export const config  = {
             "json",
             "tmx",
             "tsx",
-            "docx",
             "txt",
         ],
     },
     git: {
-        targetFolder: "/assets"
+        targetFolder: "/client/assets"
     }
 };
 

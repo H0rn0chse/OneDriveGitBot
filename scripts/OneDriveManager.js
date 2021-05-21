@@ -152,13 +152,13 @@ class _OneDriveManager {
 
         for (let i=0; i < entities.length; i++) {
             const entity = entities[i];
-            if (entity.file) {
+            if (entity.file && !entity.name.startsWith("_")) {
                 result.files.push({
                     id: entity.id,
                     name: entity.name,
                     lastModified: utcToTimestamp(entity.fileSystemInfo.lastModifiedDateTime),
                 });
-            } else if (entity.folder) {
+            } else if (entity.folder && !entity.name.startsWith("_")) {
                 const folderInfo = await this.getFolderInfo(entity.id);
                 folderInfo.name = entity.name;
                 folderInfo.id = entity.id;
