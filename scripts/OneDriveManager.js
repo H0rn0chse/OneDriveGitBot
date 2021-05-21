@@ -121,7 +121,7 @@ class _OneDriveManager {
             fileStream.on("end", resolve);
             fileStream.on("error", reject);
         })
-        .catch(() => {
+        .catch((err) => {
             Debug.error(`Download failed!\nid: ${itemId},\nname:${fileName},\ndir: ${dir}`, COMPONENT);
             console.error(err);
             return this.downloadFile(itemId, fileName, dir);
