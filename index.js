@@ -5,6 +5,7 @@ import { ClientManager } from "./scripts/ClientManager.js";
 import { OAuthHandler } from "./scripts/OAuthHandler.js";
 import { GitManager } from "./scripts/GitManager.js";
 import { Debug } from "./scripts/Debug.js";
+import { CommandManager } from "./scripts/CommandManager.js";
 
 dotenv.config();
 
@@ -29,8 +30,7 @@ ClientManager.start().then(() => {
             Debug.log("All Managers were started successfully!");
 
             process.on("SIGINT", () => {
-                DiscordManager.logoff();
-                process.exit();
+                CommandManager.invokeCommand("stop")
             });
         });
 });

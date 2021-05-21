@@ -7,6 +7,7 @@ import { setToken, checkToken } from "./commands/token.js";
 import { DiscordManager } from "./DiscordManager.js";
 import { config } from "../config.js";
 import { addAlert, removeAlert, sendAlert } from "./commands/alertChannel.js";
+import { stop } from "./commands/stop.js";
 
 const configFile = path.join(config.outdir, "command.json");
 
@@ -25,11 +26,13 @@ class _CommandManager {
             checkToken,
             addAlert,
             removeAlert,
+            stop,
         };
 
         this.invokeCommands = {
             sendDebug,
             sendAlert,
+            stop,
         };
 
         this.doNotDebug = [
