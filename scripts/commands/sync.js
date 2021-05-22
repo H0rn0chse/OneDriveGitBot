@@ -47,6 +47,9 @@ export async function sync (discordMessage) {
     });
     Debug.log(`copy done`, commandName);
 
+    await DiscordManager.setStatus("preparing repo");
+    await GitManager.reset();
+
     await DiscordManager.setStatus("committing files");
     const committedNewFiles = await GitManager.commitAll();
     Debug.log(`commit done`, commandName);
